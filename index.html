@@ -4,30 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Para Sujey</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400&family=Playfair+Display:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 
-#bg-canvas  {position:fixed;inset:0;z-index:0}
-#conn-canvas{position:fixed;inset:0;z-index:2;pointer-events:none}
-#scene      {position:fixed;inset:0;z-index:3;pointer-events:none}
-
+#bg-canvas   {position:fixed;inset:0;z-index:0}
 #milky-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0}
+#micro-canvas{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0}
+#conn-canvas {position:fixed;inset:0;z-index:3;pointer-events:none}
+#scene       {position:fixed;inset:0;z-index:4;pointer-events:none}
 
 #sun{
   position:absolute;border-radius:50%;pointer-events:none;
   transform:translate(-50%,-50%);will-change:box-shadow;
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:1px;
 }
 #sun-label{
-  position:absolute;
-  white-space:nowrap;
-  text-align:center;
-  pointer-events:none;
-  line-height:1.3;
+  position:absolute;white-space:nowrap;text-align:center;pointer-events:none;line-height:1.3;
 }
 
 .node{
@@ -40,54 +34,44 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 .node-label{
   font-size:8px;letter-spacing:1.8px;text-transform:uppercase;
   font-family:'DM Sans',sans-serif;font-weight:400;
-  white-space:nowrap;pointer-events:none;
-  opacity:0.88;
-  transition:opacity 0.2s;
-  text-shadow:
-    0 0 6px rgba(0,0,0,1),
-    0 0 12px rgba(0,0,0,0.95),
-    0 1px 4px rgba(0,0,0,1),
-    -1px -1px 3px rgba(0,0,0,0.9),
-    1px 1px 3px rgba(0,0,0,0.9);
+  white-space:nowrap;pointer-events:none;opacity:0.88;transition:opacity 0.2s;
+  text-shadow:0 0 6px rgba(0,0,0,1),0 0 12px rgba(0,0,0,0.95),0 1px 4px rgba(0,0,0,1),
+    -1px -1px 3px rgba(0,0,0,0.9),1px 1px 3px rgba(0,0,0,0.9);
 }
 .node:hover .node-label,.node.active .node-label{opacity:1}
 
-#tooltip{
-  position:fixed;z-index:100;pointer-events:none;
-  max-width:min(310px,86vw);opacity:0;
-}
+#tooltip{position:fixed;z-index:100;pointer-events:none;max-width:min(310px,86vw);opacity:0;}
 .tt-inner{border-radius:16px;padding:15px 20px 14px;backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px)}
 .tt-tag{font-size:7.5px;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:9px;font-family:'DM Sans',sans-serif;font-weight:300}
 .tt-text{font-family:'Cormorant Garamond',serif;font-size:15.5px;line-height:1.68;font-style:italic;font-weight:300}
-.tt-verse   .tt-inner{border:0.5px solid rgba(160,122,255,0.28);background:rgba(6,3,20,0.97)}
-.tt-verse   .tt-tag  {color:rgba(195,162,255,0.65)}
-.tt-verse   .tt-text {color:rgba(230,218,255,0.93)}
+.tt-verse    .tt-inner{border:0.5px solid rgba(160,122,255,0.28);background:rgba(6,3,20,0.97)}
+.tt-verse    .tt-tag  {color:rgba(195,162,255,0.65)}
+.tt-verse    .tt-text {color:rgba(230,218,255,0.93)}
 .tt-personal .tt-inner{border:0.5px solid rgba(255,182,78,0.22);background:rgba(13,6,10,0.97)}
 .tt-personal .tt-tag  {color:rgba(255,198,118,0.6)}
 .tt-personal .tt-text {color:rgba(255,243,226,0.93)}
+.tt-special  .tt-inner{border:0.5px solid rgba(255,160,200,0.32);background:rgba(14,3,10,0.97)}
+.tt-special  .tt-tag  {color:rgba(255,180,210,0.75);font-size:11px;letter-spacing:1.5px;text-transform:none;font-family:'Cormorant Garamond',serif;font-style:italic}
+.tt-special  .tt-text {color:rgba(255,235,245,0.93);font-size:16px;line-height:1.78}
 
 #player{
   position:fixed;
   bottom:max(24px,calc(env(safe-area-inset-bottom,0px)+24px));
   right:22px;z-index:50;
   display:flex;align-items:center;gap:10px;
-  background:rgba(6,4,18,0.82);
-  border:0.5px solid rgba(255,255,255,0.09);
+  background:rgba(6,4,18,0.82);border:0.5px solid rgba(255,255,255,0.09);
   border-radius:50px;padding:7px 16px 7px 8px;
-  backdrop-filter:blur(22px);opacity:0;
-  transition:border-color 0.3s;
+  backdrop-filter:blur(22px);opacity:0;transition:border-color 0.3s;
 }
 #player:hover{border-color:rgba(255,200,105,0.26)}
 #play-btn{
   width:29px;height:29px;border-radius:50%;border:none;cursor:pointer;
-  background:rgba(255,193,82,0.14);
-  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,193,82,0.14);display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:background 0.2s;
 }
 #play-btn:hover,#play-btn:active{background:rgba(255,193,82,0.28)}
 #play-icon{
-  width:0;height:0;border-style:solid;
-  border-width:5px 0 5px 9px;
+  width:0;height:0;border-style:solid;border-width:5px 0 5px 9px;
   border-color:transparent transparent transparent rgba(255,210,130,0.9);
   margin-left:2px;transition:all 0.15s;
 }
@@ -110,18 +94,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 .i-eyebrow{font-size:9px;letter-spacing:9px;color:rgba(255,255,255,0.15);text-transform:uppercase;margin-bottom:18px;opacity:0}
 .i-name{
   font-family:'Cormorant Garamond',serif;font-style:italic;
-  font-size:clamp(52px,12.5vw,108px);font-weight:300;letter-spacing:5px;line-height:1;opacity:0;
+  font-size:clamp(52px,12.5vw,108px);font-weight:300;letter-spacing:5px;line-height:1.2;opacity:0;
+  padding-bottom:0.1em;
   background:linear-gradient(148deg,#fff 16%,rgba(255,214,148,0.6) 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
 .i-line{width:0;height:0.5px;background:linear-gradient(90deg,transparent,rgba(255,210,150,0.3),transparent);margin:24px auto;opacity:0}
 .i-sub{font-size:9px;letter-spacing:8px;color:rgba(255,255,255,0.17);text-transform:uppercase;opacity:0}
 .i-btn{
-  margin-top:46px;font-size:9px;letter-spacing:5.5px;
-  color:rgba(255,255,255,0.19);text-transform:uppercase;
-  border:0.5px solid rgba(255,255,255,0.09);
-  padding:13px 42px;border-radius:40px;background:transparent;cursor:pointer;opacity:0;
-  font-family:'DM Sans',sans-serif;font-weight:300;
+  margin-top:46px;font-size:9px;letter-spacing:5.5px;color:rgba(255,255,255,0.19);text-transform:uppercase;
+  border:0.5px solid rgba(255,255,255,0.09);padding:13px 42px;border-radius:40px;
+  background:transparent;cursor:pointer;opacity:0;font-family:'DM Sans',sans-serif;font-weight:300;
   transition:color 0.4s,border-color 0.4s,background 0.4s;-webkit-appearance:none;
 }
 .i-btn:hover,.i-btn:active{color:rgba(255,218,148,0.85);border-color:rgba(255,193,82,0.22);background:rgba(255,168,42,0.04)}
@@ -145,12 +128,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 
 <canvas id="bg-canvas"></canvas>
 <canvas id="milky-canvas"></canvas>
+<canvas id="micro-canvas"></canvas>
 <canvas id="conn-canvas"></canvas>
 
 <div id="scene">
-  <div id="sun">
-    <div id="sun-label"></div>
-  </div>
+  <div id="sun"><div id="sun-label"></div></div>
 </div>
 
 <div id="tooltip">
@@ -183,50 +165,54 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 <div id="hint">toca las estrellas &nbsp;✦</div>
 
 <script>
+/* ═══ DATOS ═══════════════════════════════════════════════════════════ */
 const DATA = [
-  {tag:"te quiero",       text:"Te quiero, Sujey. Hoy y siempre.",                                           type:"personal"},
-  {tag:"mi chinita",      text:"Mi chinita preciosa. Que bueno que existes.",                                type:"personal"},
-  {tag:"Suji",            text:"Suji, solo verte ya me alegra el día.",                                      type:"personal"},
-  {tag:"Su",              text:"Eres de las personas más especiales que tengo.",                             type:"personal"},
-  {tag:"sin condiciones", text:"Te quiero así, sin condiciones y sin fechas.",                               type:"personal"},
-  {tag:"contigo soy más", text:"Contigo soy mejor persona. Sin duda.",                                      type:"personal"},
-  {tag:"hasta el final",  text:"Contigo hasta el final, pase lo que pase.",                                  type:"personal"},
-  {tag:"siempre",         text:"Siempre voy a estar para ti.",                                               type:"personal"},
-  {tag:"me alegra",       text:"Me alegra mucho tenerte cerca. De verdad.",                                  type:"personal"},
-  {tag:"no te olvido",    text:"No te voy a olvidar. Eso no está en mis planes.",                            type:"personal"},
-  {tag:"eres bonita",     text:"Eres de las personas más bonitas que conozco, por dentro y por fuera.",      type:"personal"},
-  {tag:"un regalo",       text:"Tenerte en mi vida es un regalo que no me merezco.",                         type:"personal"},
-  {tag:"este cielo",      text:"Hice este cielo pensando en ti. Cada estrella es algo que siento.",         type:"personal"},
-  {tag:"hoy y siempre",   text:"Hoy y siempre — lo digo en serio.",                                         type:"personal"},
-  {tag:"gracias",         text:"Gracias, chinita. Por todo.",                                                type:"personal"},
-  {tag:"A · S",           text:"Nos cruzamos en el camino y me alegra mucho que así haya sido.",            type:"personal"},
-  {tag:"chinita linda",   text:"Chinita linda, qué bonito es saber que estás.",                              type:"personal"},
-  {tag:"mi Suji",         text:"Mi Suji, te llevo en el corazón aunque no siempre lo diga.",                type:"personal"},
-  {tag:"para siempre",    text:"Para siempre. No como frase bonita — como decisión.",                        type:"personal"},
-  {tag:"Josué 1:9",       text:"Sé fuerte y valiente. No tengas miedo ni te desanimes.",                    type:"verse"},
-  {tag:"Isaías 41:10",    text:"No temas, estoy contigo. No te angusties, te fortaleceré y te ayudaré.",    type:"verse"},
-  {tag:"Deuteronomio 31:6",text:"Sé fuerte. No temas. Alguien va contigo — nunca te dejará ni abandonará.",type:"verse"},
-  {tag:"Josué 1:5",       text:"Estaré contigo como estuve antes. No te fallaré ni te abandonaré.",         type:"verse"},
-  {tag:"Jeremías 29:11",  text:"Los planes para ti son de bienestar — para darte futuro y esperanza.",      type:"verse"},
-  {tag:"Isaías 43:2",     text:"Cuando pases por las aguas, estaré contigo. No te ahogarás.",               type:"verse"},
-  {tag:"Salmos 46:5",     text:"No será derribada. Hay algo en ella más grande que lo que la rodea.",       type:"verse"},
-  {tag:"Sofonías 3:17",   text:"Se alegra por ti. Se deleita en ti. Canta por ti.",                         type:"verse"},
-  {tag:"Romanos 8:31",    text:"Si algo grande está de tu lado, ¿quién puede estar en contra?",             type:"verse"},
-  {tag:"Salmos 34:18",    text:"Cuando el corazón duele, hay algo que se acerca. No estás sola.",           type:"verse"},
-  {tag:"Filipenses 4:13", text:"Puedo con todo cuando algo más grande que yo me sostiene.",                 type:"verse"},
-  {tag:"Mateo 28:20",     text:"Estaré contigo todos los días, hasta el fin de los tiempos.",               type:"verse"},
-  {tag:"Salmos 139:14",   text:"Eres una creación admirable. Eso no está a discusión.",                     type:"verse"},
-  {tag:"Romanos 8:38",    text:"Nada — ni lo alto, ni lo profundo — puede separarte del amor.",             type:"verse"},
-  {tag:"Proverbios 3:5",  text:"Confía con todo el corazón. No te apoyes solo en lo que entiendes.",        type:"verse"},
-  {tag:"Romanos 15:13",   text:"Que algo te llene de alegría y paz para que abunden en esperanza.",         type:"verse"},
+  {tag:"te quiero",        text:"Te quiero, Sujey. hasta el infinito y mas alla.",                                          type:"personal"},
+  {tag:"Mi chinita",       text:"Mi chinita preciosa. te quiero un monton!",                                                                     type:"personal"},
+  {tag:"Suji",             text:"Suji, mirarte es de mis mejores pasatiempos.",                                             type:"personal"},
+  {tag:"Su",               text:"Eres mi persona especial, espero que siempre lo sepas.",                                                                type:"personal"},
+  {tag:"sin condiciones",  text:"Te quiero así, sin condiciones y sin fechas.",                                             type:"personal"},
+  {tag:"contigo soy más",  text:"Contigo soy mejor.",                                                                      type:"personal"},
+  {tag:"hasta el final",   text:"Contigo hasta el final, pase lo que pase.",                                               type:"personal"},
+  {tag:"siempre",          text:"Siempre voy a estar para ti.",                                                            type:"personal"},
+  {tag:"me alegra",        text:"Me alegra muchísimo verte avanzar y cumplir tus metas. Admiro un montón el esfuerzo que haces día a día y el tipo de persona que estás construyendo. De verdad, me alegra mucho tenerte cerca.",                                               type:"personal"},
+  {tag:"olvidarte?",       text:"Jamas.",                                                                                  type:"personal"},
+  {tag:"Preciosa",         text:"chascona, enojada, de interna.. siempre preciosa.",                                    type:"personal"},
+  {tag:"un regalo",        text:"Conocerte ha sido el mejor regalo bby, y obvio... en segundo lugar mi moto.",                type:"personal"},
+  {tag:"este cielo",       text:"Quizas no sepa decir muy bien las cosas pero te regalo estas estrellas.",                 type:"personal"},
+  {tag:"hoy y siempre",    text:"Hoy y siempre — lo digo en serio.",                                                      type:"personal"},
+  {tag:"gracias",          text:"Gracias, chinita. Por todo.",                                                             type:"personal"},
+  {tag:"A · S",            text:"Nos cruzamos en el camino y me alegra mucho que así haya sido.",                          type:"personal"},
+  {tag:"chinita linda",    text:"Chinita linda, qué bonito es saber que estás.",                                           type:"personal"},
+  {tag:"mi Suji",          text:"Mi Suji, siempre te pienso aunque no siempre lo diga.",                             type:"personal"},
+  {tag:"para siempre",     text:"Para siempre. No como frase bonita — como decisión.",                                     type:"personal"},
+  {tag:"Josué 1:9",        text:"Sé fuerte y valiente. No tengas miedo ni te desanimes.",                                 type:"verse"},
+  {tag:"Isaías 41:10",     text:"No temas, estoy contigo. No te angusties, te fortaleceré y te ayudaré.",                 type:"verse"},
+  {tag:"Deuteronomio 31:6",text:"Sé fuerte. No temas. Alguien va contigo — nunca te dejará ni abandonará.",              type:"verse"},
+  {tag:"Josué 1:5",        text:"Estaré contigo como estuve antes. No te fallaré ni te abandonaré.",                      type:"verse"},
+  {tag:"Jeremías 29:11",   text:"Los planes para ti son de bienestar — para darte futuro y esperanza.",                   type:"verse"},
+  {tag:"Isaías 43:2",      text:"Cuando pases por las aguas, estaré contigo. No te ahogarás.",                            type:"verse"},
+  {tag:"Salmos 46:5",      text:"No será derribada. Hay algo en ella más grande que lo que la rodea.",                    type:"verse"},
+  {tag:"Sofonías 3:17",    text:"Se alegra por ti. Se deleita en ti. Canta por ti.",                                      type:"verse"},
+  {tag:"Romanos 8:31",     text:"Si algo grande está de tu lado, ¿quién puede estar en contra?",                          type:"verse"},
+  {tag:"Salmos 34:18",     text:"Cuando el corazón duele, hay algo que se acerca. No estás sola.",                        type:"verse"},
+  {tag:"Filipenses 4:13",  text:"Puedo con todo cuando algo más grande que yo me sostiene.",                              type:"verse"},
+  {tag:"Mateo 28:20",      text:"Estaré contigo todos los días, hasta el fin de los tiempos.",                            type:"verse"},
+  {tag:"Salmos 139:14",    text:"Eres una creación admirable. Eso no está a discusión.",                                  type:"verse"},
+  {tag:"Romanos 8:38",     text:"Nada — ni lo alto, ni lo profundo — puede separarte del amor.",                          type:"verse"},
+  {tag:"Proverbios 3:5",   text:"Confía con todo el corazón. No te apoyes solo en lo que entiendes.",                     type:"verse"},
+  {tag:"Romanos 15:13",    text:"Que algo te llene de alegría y paz para que abunden en esperanza.",                      type:"verse"},
+  {tag:"🌻 para ti",       text:"Yo vi esta flor y pensé en ti porque es bonita, y bueno en realidad a mí no me gusta, pero creí que te gustaría porque tú sí eres bonita.",   type:"special"},
 ];
 
+/* ═══ ESTADO ══════════════════════════════════════════════════════════ */
 let W=window.innerWidth, H=window.innerHeight;
 const isMobile=()=>W<=430;
 let revealed=false, hoveredNode=null;
 const sphereRot={x:20,y:0};
 const ROT_SPD={x:0.85,y:2.4};
 
+/* ═══ FONDO ════════════════════════════════════════════════════════════ */
 const bgC=document.getElementById('bg-canvas');
 const bgX=bgC.getContext('2d');
 let bgStars=[],nebulae=[],shooters=[],bgFrame=0;
@@ -278,30 +264,25 @@ function drawBG(){
   requestAnimationFrame(drawBG);
 }
 
+/* ═══ VÍA LÁCTEA ═══════════════════════════════════════════════════════ */
 const mkC=document.getElementById('milky-canvas');
 const mkX=mkC.getContext('2d');
 
 function drawMilkyWay(){
   mkC.width=W;mkC.height=H;
   mkX.clearRect(0,0,W,H);
-  const angle=-0.38;
-  const cx=W/2, cy=H/2;
-  mkX.save();
-  mkX.translate(cx,cy);
-  mkX.rotate(angle);
+  const angle=-0.38, cx=W/2, cy=H/2;
+  mkX.save();mkX.translate(cx,cy);mkX.rotate(angle);
   const layers=[
-    {w:H*1.8, alpha:0.055, col:'rgba(200,180,255,'},
-    {w:H*1.0, alpha:0.08,  col:'rgba(220,200,255,'},
-    {w:H*0.42,alpha:0.10,  col:'rgba(240,225,255,'},
-    {w:H*0.18,alpha:0.07,  col:'rgba(255,245,255,'},
+    {w:H*1.8,alpha:0.055,col:'rgba(200,180,255,'},
+    {w:H*1.0,alpha:0.08, col:'rgba(220,200,255,'},
+    {w:H*0.42,alpha:0.10,col:'rgba(240,225,255,'},
+    {w:H*0.18,alpha:0.07,col:'rgba(255,245,255,'},
   ];
   layers.forEach(l=>{
     const g=mkX.createLinearGradient(0,-l.w/2,0,l.w/2);
-    g.addColorStop(0,l.col+'0)');
-    g.addColorStop(0.5,l.col+l.alpha+')');
-    g.addColorStop(1,l.col+'0)');
-    mkX.fillStyle=g;
-    mkX.fillRect(-W*1.2,-l.w/2,W*2.4,l.w);
+    g.addColorStop(0,l.col+'0)');g.addColorStop(0.5,l.col+l.alpha+')');g.addColorStop(1,l.col+'0)');
+    mkX.fillStyle=g;mkX.fillRect(-W*1.2,-l.w/2,W*2.4,l.w);
   });
   mkX.restore();
   const bandStars=isMobile()?280:580;
@@ -311,8 +292,7 @@ function drawMilkyWay(){
     const perp=(Math.random()-0.5)*2*spread;
     const sx=cx+along*Math.cos(angle)-perp*Math.sin(angle);
     const sy=cy+along*Math.sin(angle)+perp*Math.cos(angle);
-    const r=Math.random()*0.9+0.1;
-    const a=Math.random()*0.5+0.1;
+    const r=Math.random()*0.9+0.1, a=Math.random()*0.5+0.1;
     mkX.globalAlpha=a;
     mkX.fillStyle=['#ffffff','#e8e0ff','#ffd8b0','#d0e8ff'][Math.floor(Math.random()*4)];
     mkX.beginPath();mkX.arc(sx,sy,r,0,Math.PI*2);mkX.fill();
@@ -320,6 +300,55 @@ function drawMilkyWay(){
   mkX.globalAlpha=1;
 }
 
+/* ═══ MICRO-ESTRELLAS ══════════════════════════════════════════════════ */
+const mcC=document.getElementById('micro-canvas');
+const mcX=mcC.getContext('2d');
+let microPts3d=[];
+
+function buildMicroStars(){
+  const count=isMobile()?280:520;
+  microPts3d=Array.from({length:count},()=>{
+    const u=Math.random()*Math.PI*2;
+    const v=Math.acos(2*Math.random()-1);
+    const r=RADIUS*(0.42+Math.random()*0.82);
+    return{
+      x:Math.sin(v)*Math.cos(u)*r,
+      y:Math.sin(v)*Math.sin(u)*r,
+      z:Math.cos(v)*r,
+      r:Math.random()*0.72+0.10,
+      a:Math.random()*0.38+0.08,
+      ph:Math.random()*Math.PI*2,
+      spd:Math.random()*0.006+0.002,
+      c:['#ffffff','#f0eeff','#fff5dd','#ddf0ff','#ffe8f0'][Math.floor(Math.random()*5)]
+    };
+  });
+}
+
+function drawMicroStars(){
+  if(!revealed)return;
+  const rx=sphereRot.x*Math.PI/180;
+  const ry=sphereRot.y*Math.PI/180;
+  mcC.width=W;mcC.height=H;
+  mcX.clearRect(0,0,W,H);
+  microPts3d.forEach(s=>{
+    s.ph+=s.spd;
+    const rotated=rotate3D(s,rx,ry);
+    const p=project(rotated);
+    const a=s.a*(0.4+0.6*Math.sin(s.ph))*p.depth;
+    if(a<0.02)return;
+    const r=Math.max(0.2,s.r*p.scale*1.8);
+    mcX.globalAlpha=a;mcX.fillStyle=s.c;
+    mcX.beginPath();mcX.arc(p.sx,p.sy,r,0,Math.PI*2);mcX.fill();
+    if(r>0.4){
+      mcX.globalAlpha=a*0.12;
+      mcX.beginPath();mcX.arc(p.sx,p.sy,r*3.2,0,Math.PI*2);mcX.fill();
+    }
+  });
+  mcX.globalAlpha=1;
+  requestAnimationFrame(drawMicroStars);
+}
+
+/* ═══ GEOMETRÍA 3D ═════════════════════════════════════════════════════ */
 let RADIUS=0;
 let pts3d=[],nodeEls=[];
 
@@ -352,15 +381,16 @@ function project(p){
   return{sx:W/2+p.x*sc,sy:H/2+p.y*sc,scale:sc,depth:(p.z+RADIUS*1.5)/(RADIUS*3)};
 }
 
-const scene=document.getElementById('scene');
-const sunEl=document.getElementById('sun');
+/* ═══ ESCENA ═══════════════════════════════════════════════════════════ */
+const scene  =document.getElementById('scene');
+const sunEl  =document.getElementById('sun');
 const sunLabel=document.getElementById('sun-label');
 
 function buildScene(){
   RADIUS=isMobile()?Math.min(W,H)*0.48:Math.min(W,H)*0.44;
   pts3d=scatteredSphere(DATA.length,RADIUS);
 
-  const sunR=isMobile()?Math.min(W,H)*0.011:Math.min(W,H)*0.012;
+  const sunR=isMobile()?Math.min(W,H)*0.009:Math.min(W,H)*0.010;
   sunEl.style.cssText=`
     position:absolute;border-radius:50%;pointer-events:none;
     left:${W/2}px;top:${H/2}px;
@@ -376,54 +406,38 @@ function buildScene(){
     opacity:0;display:flex;align-items:center;justify-content:center;
   `;
 
-  const fs=Math.max(10, sunR*1.6);
-  sunLabel.style.cssText=`
-    position:absolute;
-    top:${sunR*2+8}px;
-    left:50%;transform:translateX(-50%);
-    white-space:nowrap;text-align:center;
-    pointer-events:none;
-  `;
-  sunLabel.innerHTML=`
-    <div style="
-      font-family:'Cormorant Garamond',serif;
-      font-style:italic;
-      font-size:${fs}px;
-      font-weight:400;
-      color:rgba(255,240,180,0.98);
-      letter-spacing:3px;
-      line-height:1.3;
-      text-shadow:
-        0 0 8px rgba(255,210,80,0.95),
-        0 0 20px rgba(255,180,50,0.7),
-        0 0 40px rgba(255,140,20,0.4);
-    ">S ✦ A</div>
-  `;
+  sunLabel.innerHTML='';
 
   nodeEls.forEach(e=>e.remove());
   nodeEls=[];
 
   DATA.forEach((d,i)=>{
-    const isV=d.type==='verse';
-    const col=isV?'#b8a6ff':'#ffd07a';
-    const glow=isV?'rgba(170,138,255,':'rgba(255,195,68,';
-    const base=isMobile()?0.028:0.022;
-    const diam=Math.min(W,H)*(isV?base*0.76:base);
+    const isV =d.type==='verse';
+    const isSp=d.type==='special';
+    const col  =isSp?'#ffb8d8':isV?'#b8a6ff':'#ffd07a';
+    const glow =isSp?'rgba(255,140,180,':isV?'rgba(170,138,255,':'rgba(255,195,68,';
+    const base =isMobile()?0.028:0.022;
+    const diam =Math.min(W,H)*(isV?base*0.76:base);
 
     const el=document.createElement('div');
     el.className='node';
     el.style.cssText='position:absolute;pointer-events:auto;cursor:pointer;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;';
+
+    const ringExtra=isSp?`,0 0 0 1.5px rgba(255,160,200,0.4),0 0 0 3.5px rgba(255,120,160,0.14)`:'';
+    const labelStyle=isSp
+      ?`font-size:10px;letter-spacing:1px;opacity:0.95;`
+      :'';
+
     el.innerHTML=`
       <div class="node-dot" style="
         width:${diam}px;height:${diam}px;border-radius:50%;
-        background:radial-gradient(circle at 32% 28%,
-          rgba(255,255,255,0.96) 0%,${col} 38%,${glow}0.68) 100%);
+        background:radial-gradient(circle at 32% 28%,rgba(255,255,255,0.96) 0%,${col} 38%,${glow}0.68) 100%);
         box-shadow:
           0 0 ${diam*1.4}px ${diam*0.75}px ${glow}0.52),
           0 0 ${diam*3.8}px ${diam*1.9}px  ${glow}0.18),
-          0 0 ${diam*7}px   ${diam*3.5}px  ${glow}0.06);
+          0 0 ${diam*7}px   ${diam*3.5}px  ${glow}0.06)${ringExtra};
       "></div>
-      <div class="node-label" style="color:${col};">${d.tag}</div>
+      <div class="node-label" style="color:${col};${labelStyle}">${d.tag}</div>
     `;
     el._data=d;el._idx=i;
     scene.appendChild(el);
@@ -431,6 +445,7 @@ function buildScene(){
   });
 }
 
+/* ═══ CONEXIONES ═══════════════════════════════════════════════════════ */
 const ccC=document.getElementById('conn-canvas');
 const ccX=ccC.getContext('2d');
 let connections=[];
@@ -447,6 +462,7 @@ function buildConnections(){
     connections.push([i,(i+Math.floor(DATA.length/3))%DATA.length]);
 }
 
+/* ═══ RENDER LOOP ══════════════════════════════════════════════════════ */
 let lastTs=null;
 
 function frame(ts){
@@ -475,8 +491,9 @@ function frame(ts){
     const alpha=isHovC?0.62:dMin*0.088;
     if(alpha<0.006)return;
     const isV=a===-1?(DATA[b].type==='verse'):(DATA[a]?.type==='verse'||DATA[b]?.type==='verse');
+    const isSp=a===-1?(DATA[b].type==='special'):(DATA[a]?.type==='special'||DATA[b]?.type==='special');
     ccX.beginPath();ccX.moveTo(pa.sx,pa.sy);ccX.lineTo(pb.sx,pb.sy);
-    ccX.strokeStyle=isV?`rgba(158,122,255,${alpha})`:`rgba(255,175,66,${alpha*0.9})`;
+    ccX.strokeStyle=isSp?`rgba(255,140,185,${alpha})`:isV?`rgba(158,122,255,${alpha})`:`rgba(255,175,66,${alpha*0.9})`;
     ccX.lineWidth=isHovC?0.75:0.24;
     ccX.setLineDash(isHovC?[]:[2,12]);
     ccX.stroke();ccX.setLineDash([]);
@@ -499,14 +516,15 @@ function frame(ts){
   requestAnimationFrame(frame);
 }
 
-const tip=document.getElementById('tooltip');
+/* ═══ TOOLTIP ══════════════════════════════════════════════════════════ */
+const tip   =document.getElementById('tooltip');
 const tipTag=tip.querySelector('.tt-tag');
 const tipTxt=tip.querySelector('.tt-text');
 let tipTw=null;
 
 function showTip(d,el){
   tipTag.textContent=d.tag;tipTxt.textContent=d.text;
-  tip.className=d.type==='verse'?'tt-verse':'tt-personal';
+  tip.className=d.type==='verse'?'tt-verse':d.type==='special'?'tt-special':'tt-personal';
   const r=el.getBoundingClientRect();
   let tx,ty;
   if(isMobile()){
@@ -529,6 +547,7 @@ function hideTip(){
   tipTw=gsap.to(tip,{opacity:0,y:4,duration:0.2});
 }
 
+/* ═══ EVENTOS NODOS ════════════════════════════════════════════════════ */
 scene.addEventListener('mouseover',e=>{
   const el=e.target.closest('.node');if(!el)return;
   hoveredNode=el;showTip(el._data,el);
@@ -544,7 +563,7 @@ scene.addEventListener('click',e=>{
   spawnSparks(e.clientX,e.clientY,el._data.type);
   gsap.timeline()
     .to(el.querySelector('.node-dot'),{scale:2.4,duration:0.12,ease:'power2.out'})
-    .to(el.querySelector('.node-dot'),{scale:2.0,duration:0.2,ease:'power2.in'});
+    .to(el.querySelector('.node-dot'),{scale:2.0,duration:0.2, ease:'power2.in'});
 });
 
 let touchHeld=null;
@@ -565,6 +584,7 @@ window.addEventListener('touchend',()=>{
   }
 });
 
+/* ═══ DRAG ══════════════════════════════════════════════════════════════ */
 let drag={active:false,sx:0,sy:0,rx:0,ry:0};
 document.addEventListener('mousedown',e=>{
   if(e.target.closest('.node')||e.target.closest('#intro')||e.target.closest('#player'))return;
@@ -592,18 +612,18 @@ document.addEventListener('touchmove',e=>{
 },{passive:true});
 document.addEventListener('touchend',()=>{tdrag.active=false;});
 
+/* ═══ AUDIO ════════════════════════════════════════════════════════════ */
 const audio   =document.getElementById('audio-track');
 const playBtn =document.getElementById('play-btn');
 const playIcon=document.getElementById('play-icon');
 const playerEl=document.getElementById('player');
-let isPlaying =false;
+let isPlaying=false;
 
 function tryAutoplay(){
-  if(!audio.src||audio.src===window.location.href) return;
+  if(!audio.src||audio.src===window.location.href)return;
   audio.volume=0;
   audio.play().then(()=>{
-    isPlaying=true;
-    playIcon.classList.add('paused');
+    isPlaying=true;playIcon.classList.add('paused');
     gsap.to(audio,{volume:1,duration:4,ease:'power1.inOut'});
     gsap.to(playerEl,{borderColor:'rgba(255,200,95,0.3)',duration:0.5});
   }).catch(()=>{});
@@ -611,8 +631,7 @@ function tryAutoplay(){
 
 playBtn.addEventListener('click',()=>{
   if(!audio.src||audio.src===window.location.href){
-    gsap.to('#song-title',{opacity:0.22,duration:0.12,yoyo:true,repeat:5});
-    return;
+    gsap.to('#song-title',{opacity:0.22,duration:0.12,yoyo:true,repeat:5});return;
   }
   if(!isPlaying){
     audio.play().then(()=>{
@@ -626,9 +645,12 @@ playBtn.addEventListener('click',()=>{
 });
 audio.addEventListener('ended',()=>{isPlaying=false;playIcon.classList.remove('paused');});
 
+/* ═══ SPARKS ════════════════════════════════════════════════════════════ */
 function spawnSparks(x,y,type){
   const cols=type==='verse'
     ?['#d0b8ff','#a888ff','#ece0ff','#fff']
+    :type==='special'
+    ?['#ffb8d8','#ff80b0','#ffd0e8','#fff','#ffe0f0']
     :['#ffd888','#ffb845','#ffe8a0','#fff'];
   const count=isMobile()?9:14;
   for(let i=0;i<count;i++){
@@ -644,43 +666,48 @@ function spawnSparks(x,y,type){
   }
 }
 
+/* ═══ REVEAL ════════════════════════════════════════════════════════════ */
 function reveal(){
   revealed=true;
   buildConnections();
   drawMilkyWay();
 
   gsap.to('#milky-canvas',{opacity:1,duration:3.5,delay:1.2,ease:'power2.out'});
+  gsap.to('#micro-canvas',{opacity:1,duration:4.0,delay:2.0,ease:'power2.out'});
+
   gsap.fromTo(sunEl,{opacity:0,scale:0.04},{opacity:1,scale:1,duration:2.6,ease:'elastic.out(1,0.34)',delay:0.15});
   const sr=parseFloat(sunEl.style.width)/2;
+  // Pulso de brillo
   gsap.to(sunEl,{
     boxShadow:`
-      0 0 ${sr*2.8}px ${sr*1.4}px rgba(255,228,100,1),
-      0 0 ${sr*8}px   ${sr*4}px   rgba(255,170,35,0.75),
-      0 0 ${sr*18}px  ${sr*9}px   rgba(255,110,20,0.38),
-      0 0 ${sr*35}px  ${sr*17}px  rgba(200,65,15,0.16),
-      0 0 ${sr*60}px  ${sr*30}px  rgba(160,40,10,0.08)
-    `,
-    duration:3,repeat:-1,yoyo:true,ease:'sine.inOut',delay:2.8,
+      0 0 ${sr*3.2}px ${sr*1.6}px rgba(255,232,110,1),
+      0 0 ${sr*10}px  ${sr*5}px   rgba(255,175,40,0.82),
+      0 0 ${sr*22}px  ${sr*11}px  rgba(255,115,25,0.45),
+      0 0 ${sr*42}px  ${sr*21}px  rgba(200,70,18,0.20),
+      0 0 ${sr*70}px  ${sr*35}px  rgba(160,42,12,0.10)`,
+    duration:2.8,repeat:-1,yoyo:true,ease:'sine.inOut',delay:2.8,
   });
+  // Pulso de escala sutil
+  gsap.to(sunEl,{scale:1.08,duration:2.8,repeat:-1,yoyo:true,ease:'sine.inOut',delay:2.8});
 
-  gsap.fromTo(nodeEls,
-    {opacity:0,scale:0},
-    {opacity:1,scale:1,duration:1.05,ease:'back.out(1.9)',
-     stagger:{amount:3.5,from:'random'},delay:1.0}
-  );
-
+  gsap.fromTo(nodeEls,{opacity:0,scale:0},{opacity:1,scale:1,duration:1.05,ease:'back.out(1.9)',stagger:{amount:3.5,from:'random'},delay:1.0});
   gsap.to(playerEl,{opacity:1,duration:0.9,delay:4.5,ease:'power2.out'});
-  setTimeout(tryAutoplay, 800);
+
+  setTimeout(tryAutoplay,800);
+  buildMicroStars();
+  drawMicroStars();
   requestAnimationFrame(frame);
 }
 
+/* ═══ RESIZE ════════════════════════════════════════════════════════════ */
 function resize(){
   W=window.innerWidth;H=window.innerHeight;
   initBG();drawMilkyWay();
-  if(revealed){buildScene();buildConnections();}
+  if(revealed){buildScene();buildConnections();buildMicroStars();}
 }
 window.addEventListener('resize',resize);
 
+/* ═══ INTRO ═════════════════════════════════════════════════════════════ */
 gsap.timeline()
   .fromTo('.i-eyebrow',{opacity:0,y:8}, {opacity:1,y:0,duration:0.9,ease:'power2.out'},0.5)
   .fromTo('.i-name',   {opacity:0,y:24},{opacity:1,y:0,duration:1.4,ease:'power3.out'},0.85)
@@ -697,6 +724,7 @@ document.getElementById('enterBtn').addEventListener('click',()=>{
 
 gsap.to('#hint',{opacity:0.26,duration:2.8,repeat:-1,yoyo:true,ease:'sine.inOut',delay:2.8});
 
+/* ═══ INIT ══════════════════════════════════════════════════════════════ */
 initBG();drawBG();
 </script>
 </body>
