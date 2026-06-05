@@ -50,61 +50,85 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 }
 #tip-overlay.active{display:block;}
 
-/* panel fijo abajo, como la zona de mensajes de wsp */
+/* ── contenedor fijo abajo ── */
 #tooltip{
   position:fixed;
   bottom:0; left:0; right:0;
   z-index:100;
   pointer-events:none;
-  padding:0 0 max(18px,env(safe-area-inset-bottom,18px)) 0;
+  /* padding bottom = safe area + espacio cómodo */
+  padding:0 16px max(22px,calc(env(safe-area-inset-bottom,0px)+22px)) 16px;
   display:flex;
   flex-direction:column;
   align-items:flex-start;
-  padding-left:16px;
-  padding-right:16px;
-  gap:6px;
-  /* empieza invisible y fuera */
-  transform:translateY(40px);
+  gap:7px;
+  /* estado inicial: invisible y desplazado */
   opacity:0;
+  transform:translateY(28px);
+  will-change:transform,opacity;
 }
 
-/* franja de fondo semi-transparente tipo chat */
+/* degradado de fondo para legibilidad */
 #tooltip::before{
   content:'';
   position:absolute;
-  inset:0;
-  background:linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.0) 100%);
+  left:0;right:0;bottom:0;
+  height:160px;
+  background:linear-gradient(to top,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0) 100%);
   pointer-events:none;
   z-index:0;
 }
 
-/* burbuja del remitente (izquierda) — estilo recibido */
-.tt-bubble{
+/* ── burbujas compartidas ── */
+.tt-bubble,
+.tt-typing{
   position:relative;
   z-index:1;
-  max-width:min(310px,88vw);
-  border-radius:4px 18px 18px 18px;  /* colita arriba-izquierda */
-  padding:10px 14px 8px 14px;
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  box-shadow:0 2px 14px rgba(0,0,0,0.55);
-  transform-origin:bottom left;
+  margin-left:10px;
+  border-radius:4px 18px 18px 18px;
+  backdrop-filter:blur(28px);
+  -webkit-backdrop-filter:blur(28px);
+  box-shadow:0 3px 16px rgba(0,0,0,0.5);
+  will-change:transform,opacity;
+  /* transición CSS para cambios de color suaves */
+  transition:background 0.25s, border-color 0.25s;
 }
 
-/* colita de la burbuja — triángulo arriba-izquierda */
-.tt-bubble::before{
+/* colita arriba-izquierda */
+.tt-bubble::before,
+.tt-typing::before{
   content:'';
   position:absolute;
-  top:0; left:-7px;
+  top:auto; bottom:8px; left:-9px;
   width:0; height:0;
   border-style:solid;
-  border-width:0 8px 8px 0;
+  border-width:7px 10px 7px 0;
+  z-index:1;
+  pointer-events:none;
 }
 
-/* nombre / tag estilo "contacto wsp" */
+.tt-bubble::after,
+.tt-typing::after{
+  content:'';
+  position:absolute;
+  top:auto; bottom:7px; left:-10px;
+  width:0; height:0;
+  border-style:solid;
+  border-width:8px 11px 8px 0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ── burbuja texto ── */
+.tt-bubble{
+  max-width:min(320px,88vw);
+  padding:10px 14px 8px;
+}
+
+/* nombre / tag */
 .tt-tag{
   font-size:10px;
-  letter-spacing:1.6px;
+  letter-spacing:1.5px;
   text-transform:uppercase;
   margin-bottom:5px;
   font-family:'DM Sans',sans-serif;
@@ -112,140 +136,131 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
   display:block;
 }
 
-/* texto del mensaje */
+/* texto mensaje */
 .tt-text{
   font-family:'Nunito',sans-serif;
   font-size:15px;
-  line-height:1.62;
+  line-height:1.65;
   font-weight:400;
   display:block;
 }
 
-/* pie de burbuja: hora + checks */
+/* pie hora + checks */
 .tt-footer{
   display:flex;
   align-items:center;
   justify-content:flex-end;
   gap:4px;
-  margin-top:5px;
+  margin-top:6px;
 }
 .tt-time{
-  font-size:10px;
+  font-size:10.5px;
   font-family:'DM Sans',sans-serif;
   font-weight:300;
-  opacity:0.5;
+  opacity:0.48;
 }
 .tt-checks{
-  display:flex;gap:1px;opacity:0;
-  transition:opacity 0.4s;
+  display:flex;gap:0px;
+  opacity:0;
+  transform:scale(0.7);
+  transition:opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
 }
-.tt-checks.shown{opacity:1}
-.tt-check{
-  width:14px;height:14px;
+.tt-checks.shown{opacity:1;transform:scale(1)}
+.tt-check{width:14px;height:14px;}
+
+/* ── burbuja typing ── */
+.tt-typing{
+  padding:11px 16px;
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
 
-/* burbuja "escribiendo..." */
-.tt-typing{
-  position:relative;z-index:1;
-  border-radius:4px 18px 18px 18px;
-  padding:11px 16px;
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  box-shadow:0 2px 14px rgba(0,0,0,0.55);
-  display:flex;align-items:center;gap:5px;
-}
-.tt-typing::before{
-  content:'';
-  position:absolute;
-  top:0; left:-7px;
-  width:0; height:0;
-  border-style:solid;
-  border-width:0 8px 8px 0;
-}
+/* puntos animados */
 .tt-dot{
   width:7px;height:7px;border-radius:50%;
-  animation:wsp-bounce 1.1s infinite ease-in-out;
+  animation:wsp-bounce 1.2s infinite cubic-bezier(0.45,0.05,0.55,0.95);
 }
-.tt-dot:nth-child(2){animation-delay:0.18s}
-.tt-dot:nth-child(3){animation-delay:0.36s}
+.tt-dot:nth-child(1){animation-delay:0s}
+.tt-dot:nth-child(2){animation-delay:0.2s}
+.tt-dot:nth-child(3){animation-delay:0.4s}
 @keyframes wsp-bounce{
-  0%,80%,100%{transform:translateY(0);opacity:0.45}
-  40%{transform:translateY(-5px);opacity:1}
+  0%,60%,100%{transform:translateY(0);opacity:0.35}
+  30%{transform:translateY(-6px);opacity:1}
 }
 
-/* ── colores por tipo ── */
-/* personal — verde oscuro tipo wsp recibido */
-#tooltip.tt-personal .tt-bubble{
-  background:rgba(22,38,18,0.96);
-  border:1px solid rgba(100,210,80,0.18);
-}
-#tooltip.tt-personal .tt-bubble::before{
-  border-color:transparent rgba(22,38,18,0.96) transparent transparent;
-}
+/* ── COLORES POR TIPO ── */
+
+/* personal — verde wsp */
+#tooltip.tt-personal .tt-bubble,
 #tooltip.tt-personal .tt-typing{
-  background:rgba(22,38,18,0.96);
-  border:1px solid rgba(100,210,80,0.18);
+  background:rgba(18,34,14,0.97);
+  border:1px solid rgba(100,210,80,0.16);
 }
+#tooltip.tt-personal .tt-bubble::before,
 #tooltip.tt-personal .tt-typing::before{
-  border-color:transparent rgba(22,38,18,0.96) transparent transparent;
+  border-color:transparent rgba(18,34,14,0.97) transparent transparent;
 }
-#tooltip.tt-personal .tt-dot{background:rgba(140,220,100,0.7)}
-#tooltip.tt-personal .tt-tag {color:rgba(130,220,95,0.9)}
-#tooltip.tt-personal .tt-text{color:rgba(235,255,228,0.95)}
-#tooltip.tt-personal .tt-time{color:rgba(200,240,190,0.5)}
-#tooltip.tt-personal .tt-check path{stroke:rgba(100,210,80,0.7)}
+#tooltip.tt-personal .tt-bubble::after,
+#tooltip.tt-personal .tt-typing::after{
+  border-color:transparent rgba(100,210,80,0.16) transparent transparent;
+}
+#tooltip.tt-personal .tt-dot    {background:rgba(130,220,90,0.75)}
+#tooltip.tt-personal .tt-tag    {color:rgba(120,215,85,0.9)}
+#tooltip.tt-personal .tt-text   {color:rgba(232,255,224,0.96)}
+#tooltip.tt-personal .tt-time   {color:rgba(190,240,175,0.48)}
+#tooltip.tt-personal .tt-check path{stroke:rgba(100,210,75,0.75)}
 
-/* verse — azul-índigo tipo wsp */
-#tooltip.tt-verse .tt-bubble{
-  background:rgba(14,18,52,0.97);
-  border:1px solid rgba(122,150,255,0.22);
-}
-#tooltip.tt-verse .tt-bubble::before{
-  border-color:transparent rgba(14,18,52,0.97) transparent transparent;
-}
+/* verse — azul oscuro */
+#tooltip.tt-verse .tt-bubble,
 #tooltip.tt-verse .tt-typing{
-  background:rgba(14,18,52,0.97);
-  border:1px solid rgba(122,150,255,0.22);
+  background:rgba(10,14,46,0.97);
+  border:1px solid rgba(120,145,255,0.20);
 }
+#tooltip.tt-verse .tt-bubble::before,
 #tooltip.tt-verse .tt-typing::before{
-  border-color:transparent rgba(14,18,52,0.97) transparent transparent;
+  border-color:transparent rgba(10,14,46,0.97) transparent transparent;
 }
-#tooltip.tt-verse .tt-dot{background:rgba(160,175,255,0.7)}
-#tooltip.tt-verse .tt-tag {color:rgba(160,180,255,0.9)}
-#tooltip.tt-verse .tt-text{color:rgba(218,225,255,0.95)}
-#tooltip.tt-verse .tt-time{color:rgba(180,195,255,0.45)}
-#tooltip.tt-verse .tt-check path{stroke:rgba(140,160,255,0.75)}
+#tooltip.tt-verse .tt-bubble::after,
+#tooltip.tt-verse .tt-typing::after{
+  border-color:transparent rgba(120,145,255,0.20) transparent transparent;
+}
+#tooltip.tt-verse .tt-dot    {background:rgba(155,170,255,0.75)}
+#tooltip.tt-verse .tt-tag    {color:rgba(155,175,255,0.92)}
+#tooltip.tt-verse .tt-text   {color:rgba(215,222,255,0.96)}
+#tooltip.tt-verse .tt-time   {color:rgba(175,190,255,0.44)}
+#tooltip.tt-verse .tt-check path{stroke:rgba(135,158,255,0.78)}
 
 /* special — rosa */
-#tooltip.tt-special .tt-bubble{
-  background:rgba(50,10,28,0.97);
-  border:1px solid rgba(255,140,185,0.28);
-}
-#tooltip.tt-special .tt-bubble::before{
-  border-color:transparent rgba(50,10,28,0.97) transparent transparent;
-}
+#tooltip.tt-special .tt-bubble,
 #tooltip.tt-special .tt-typing{
-  background:rgba(50,10,28,0.97);
-  border:1px solid rgba(255,140,185,0.28);
+  background:rgba(46,8,24,0.97);
+  border:1px solid rgba(255,135,180,0.24);
 }
+#tooltip.tt-special .tt-bubble::before,
 #tooltip.tt-special .tt-typing::before{
-  border-color:transparent rgba(50,10,28,0.97) transparent transparent;
+  border-color:transparent rgba(46,8,24,0.97) transparent transparent;
 }
-#tooltip.tt-special .tt-dot{background:rgba(255,160,200,0.7)}
+#tooltip.tt-special .tt-bubble::after,
+#tooltip.tt-special .tt-typing::after{
+  border-color:transparent rgba(255,135,180,0.24) transparent transparent;
+}
+#tooltip.tt-special .tt-dot{background:rgba(255,155,195,0.75)}
 #tooltip.tt-special .tt-tag{
-  color:rgba(255,180,210,0.9);
-  font-size:11px;letter-spacing:0.8px;text-transform:none;
+  color:rgba(255,175,210,0.92);
+  font-size:11px;letter-spacing:0.7px;text-transform:none;
   font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
 }
-#tooltip.tt-special .tt-text{color:rgba(255,235,245,0.95)}
-#tooltip.tt-special .tt-time{color:rgba(255,195,220,0.45)}
-#tooltip.tt-special .tt-check path{stroke:rgba(255,160,200,0.7)}
+#tooltip.tt-special .tt-text  {color:rgba(255,232,244,0.96)}
+#tooltip.tt-special .tt-time  {color:rgba(255,190,218,0.44)}
+#tooltip.tt-special .tt-check path{stroke:rgba(255,155,196,0.75)}
 
-/* ── MOBILE OVERRIDES ── */
+/* ── MOBILE ── */
 @media(max-width:430px){
   #tooltip{padding-left:12px;padding-right:12px;}
   .tt-text{font-size:15.5px}
-  .tt-bubble{max-width:92vw}
+  .tt-bubble{max-width:min(330px,92vw)}
+  .tt-bubble,.tt-typing{margin-left:8px;}
 }
 
 /* ── PLAYER ─────────────────────────────────────────────────────────── */
@@ -337,12 +352,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 
 <!-- Chat wsp panel -->
 <div id="tooltip">
-  <div class="tt-typing" id="tt-typing" style="display:none">
+  <div class="tt-typing" id="tt-typing" style="visibility:hidden;pointer-events:none">
     <div class="tt-dot"></div>
     <div class="tt-dot"></div>
     <div class="tt-dot"></div>
   </div>
-  <div class="tt-bubble" id="tt-bubble" style="display:none">
+  <div class="tt-bubble" id="tt-bubble" style="visibility:hidden;pointer-events:none">
     <span class="tt-tag" id="tt-tag"></span>
     <span class="tt-text" id="tt-text"></span>
     <div class="tt-footer">
@@ -601,7 +616,6 @@ function project(p){
 /* ═══ ESCENA ═══════════════════════════════════════════════════════════ */
 const scene  =document.getElementById('scene');
 const sunEl  =document.getElementById('sun');
-const sunLabel=document.getElementById('sun-label');
 
 function buildScene(){
   RADIUS=isMobile()?Math.min(W,H)*0.48:Math.min(W,H)*0.44;
@@ -623,7 +637,6 @@ function buildScene(){
     opacity:0;display:flex;align-items:center;justify-content:center;
   `;
 
-  sunLabel.innerHTML='';
   nodeEls.forEach(e=>e.remove());
   nodeEls=[];
 
@@ -653,6 +666,8 @@ function buildScene(){
       "></div>
       <div class="node-label" style="color:${col};${labelStyle}">${d.tag}</div>
     `;
+    el._dot=el.querySelector('.node-dot');
+    el._label=el.querySelector('.node-label');
     el._data=d;el._idx=i;
     scene.appendChild(el);
     nodeEls.push(el);
@@ -685,7 +700,7 @@ function frame(ts){
   const dt=Math.min((ts-lastTs)/1000,0.05);
   lastTs=ts;
 
-  if(!hoveredNode&&!drag.active&&!tdrag.active){
+  if(!drag.active&&!tdrag.active){
     sphereRot.x+=ROT_SPD.x*dt;
     sphereRot.y+=ROT_SPD.y*dt;
   }
@@ -721,10 +736,8 @@ function frame(ts){
     const op=0.12+0.88*p.depth;
     el.style.opacity=op.toFixed(3);
     el.style.zIndex=Math.round(p.depth*100);
-    const dot=el.querySelector('.node-dot');
-    if(dot) dot.style.transform=`scale(${sc.toFixed(3)})`;
-    const lbl=el.querySelector('.node-label');
-    if(lbl) lbl.style.fontSize=(Math.max(7.5,9.5*sc)).toFixed(1)+'px';
+    if(el._dot) el._dot.style.transform=`scale(${sc.toFixed(3)})`;
+    if(el._label) el._label.style.fontSize=(Math.max(7.5,9.5*sc)).toFixed(1)+'px';
   });
 
   requestAnimationFrame(frame);
@@ -740,21 +753,38 @@ const ttTimeEl   = document.getElementById('tt-time');
 const ttChecks   = document.getElementById('tt-checks');
 const tipOverlay = document.getElementById('tip-overlay');
 
-let tipTimer = null;   // typing timeout
-let tipOpen  = false;
+let tipTimer  = null;
+let tipOpen   = false;
+let tipGsap   = null;   // referencia al tween del panel
 
 function getNow(){
-  const d=new Date();
-  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  const d = new Date();
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
 }
 
-function showTip(d, el){
-  /* cancelar cualquier secuencia en curso */
+/* ─ helpers de visibilidad sin display:none abrupto ─ */
+function _showEl(el){ el.style.visibility='visible'; el.style.pointerEvents='auto'; }
+function _hideEl(el){ el.style.visibility='hidden';  el.style.pointerEvents='none'; }
+function getNodeDot(el){ return el?el._dot:null; }
+function animateNodeDot(el,scale,duration,ease){
+  const dot=getNodeDot(el);
+  if(dot) gsap.to(dot,{scale,duration,ease});
+}
+
+function getTipClass(type){
+  return type==='verse' ? 'tt-verse' : type==='special' ? 'tt-special' : 'tt-personal';
+}
+
+function showTip(d){
   clearTimeout(tipTimer);
+  if(tipGsap) tipGsap.kill();
+
   if(tipOpen){
-    /* cierre rápido del anterior y abre nuevo */
-    gsap.to(tip,{opacity:0,y:24,duration:0.15,ease:'power2.in',
-      onComplete:()=>_startTyping(d)});
+    /* ya hay una burbuja abierta: cross-fade rápido al nuevo */
+    tipGsap = gsap.to(tip, {
+      opacity:0, y:16, duration:0.18, ease:'power2.in',
+      onComplete: ()=> _startTyping(d)
+    });
   } else {
     _startTyping(d);
   }
@@ -763,58 +793,73 @@ function showTip(d, el){
 function _startTyping(d){
   tipOpen = true;
 
-  /* clase de color según tipo */
-  tip.className = d.type==='verse' ? 'tt-verse' : d.type==='special' ? 'tt-special' : 'tt-personal';
+  /* clase de color */
+  tip.className = getTipClass(d.type);
 
-  /* mostrar burbuja de typing, ocultar burbuja de texto */
-  ttBubble.style.display  = 'none';
-  ttTyping.style.display  = 'flex';
+  /* preparar estado inicial sin cortes */
   ttChecks.classList.remove('shown');
+  gsap.set(ttTyping, {opacity:0, y:12, scale:0.92});
+  gsap.set(ttBubble, {opacity:0, y:10, scale:0.90});
+  _showEl(ttTyping);
+  _hideEl(ttBubble);
 
-  /* panel sube desde abajo */
-  gsap.fromTo(tip,
-    {opacity:0, y:30},
-    {opacity:1, y:0, duration:0.32, ease:'back.out(1.4)'}
-  );
-  /* typing bounce */
-  gsap.fromTo(ttTyping,
-    {opacity:0, scale:0.88, transformOrigin:'bottom left'},
-    {opacity:1, scale:1,    duration:0.28, ease:'back.out(2)'}
+  /* panel sube suavemente */
+  tipGsap = gsap.fromTo(tip,
+    { opacity:0, y:26 },
+    { opacity:1, y:0, duration:0.38, ease:'cubic.out' }
   );
 
-  /* tiempo de "escribiendo": ~700 ms base + 12ms por carácter */
-  const delay = Math.min(700 + d.text.length * 12, 2200);
+  /* burbuja typing entra con spring */
+  gsap.to(ttTyping, {
+    opacity:1, y:0, scale:1,
+    duration:0.42, ease:'back.out(1.8)',
+    transformOrigin:'bottom left'
+  });
+
+  /* typing dura siempre 900 ms — constante y predecible */
+  const TYPING_MS = 900;
 
   tipTimer = setTimeout(()=>{
-    /* ocultar typing, mostrar mensaje */
-    gsap.to(ttTyping,{opacity:0,scale:0.85,duration:0.18,ease:'power2.in',
-      onComplete:()=>{
-        ttTyping.style.display='none';
-        ttTagEl.textContent   = d.tag;
-        ttTextEl.textContent  = d.text;
-        ttTimeEl.textContent  = getNow();
-        ttBubble.style.display='block';
+    /* typing sale deslizándose abajo */
+    gsap.to(ttTyping, {
+      opacity:0, y:10, scale:0.88,
+      duration:0.22, ease:'power2.in',
+      transformOrigin:'bottom left',
+      onComplete: ()=>{
+        _hideEl(ttTyping);
 
+        /* rellenar contenido */
+        ttTagEl.textContent  = d.tag;
+        ttTextEl.textContent = d.text;
+        ttTimeEl.textContent = getNow();
+        _showEl(ttBubble);
+
+        /* burbuja mensaje entra con spring desde abajo */
         gsap.fromTo(ttBubble,
-          {opacity:0, scale:0.84, y:10, transformOrigin:'bottom left'},
-          {opacity:1, scale:1,    y:0,  duration:0.34, ease:'back.out(2.2)'}
+          { opacity:0, y:14, scale:0.88, transformOrigin:'bottom left' },
+          { opacity:1, y:0,  scale:1,
+            duration:0.40, ease:'back.out(2.0)' }
         );
 
-        /* doble check aparece 600ms después */
-        setTimeout(()=> ttChecks.classList.add('shown'), 600);
+        /* checks entran 500 ms después */
+        setTimeout(()=> ttChecks.classList.add('shown'), 500);
       }
     });
-  }, delay);
+  }, TYPING_MS);
 }
 
 function hideTip(){
   clearTimeout(tipTimer);
+  if(tipGsap) tipGsap.kill();
   tipOpen = false;
   tipOverlay.classList.remove('active');
-  gsap.to(tip,{opacity:0, y:22, duration:0.22, ease:'power2.in',
+
+  gsap.to(tip, {
+    opacity:0, y:20,
+    duration:0.28, ease:'power2.in',
     onComplete:()=>{
-      ttTyping.style.display='none';
-      ttBubble.style.display='none';
+      _hideEl(ttTyping);
+      _hideEl(ttBubble);
       ttChecks.classList.remove('shown');
     }
   });
@@ -825,57 +870,76 @@ tipOverlay.addEventListener('touchstart',()=>{
   hideTip();
   if(hoveredNode){
     hoveredNode.classList.remove('active');
-    gsap.to(hoveredNode.querySelector('.node-dot'),{scale:1,duration:0.22,ease:'power3.out'});
+    animateNodeDot(hoveredNode,1,0.22,'power3.out');
     hoveredNode=null;
   }
 },{passive:true});
 
 /* ═══ EVENTOS NODOS ════════════════════════════════════════════════════ */
-scene.addEventListener('mouseover',e=>{
-  const el=e.target.closest('.node');if(!el)return;
-  hoveredNode=el;showTip(el._data,el);
-  gsap.to(el.querySelector('.node-dot'),{scale:2.0,duration:0.27,ease:'back.out(2)'});
-});
-scene.addEventListener('mouseout',e=>{
-  const el=e.target.closest('.node');if(!el)return;
-  hoveredNode=null;hideTip();
-  gsap.to(el.querySelector('.node-dot'),{scale:1,duration:0.22,ease:'power3.out'});
-});
+function closeActiveNode(){
+  if(!hoveredNode)return;
+  hoveredNode.classList.remove('active');
+  animateNodeDot(hoveredNode,1,0.22,'power3.out');
+  hoveredNode=null;
+  touchHeld=null;
+  hideTip();
+}
+
+function openNodeTip(el){
+  if(hoveredNode&&hoveredNode!==el){
+    hoveredNode.classList.remove('active');
+    animateNodeDot(hoveredNode,1,0.15,'power3.out');
+  }
+  hoveredNode=el;
+  touchHeld=el;
+  el.classList.add('active');
+  showTip(el._data);
+  animateNodeDot(el,2.0,0.27,'back.out(2)');
+}
+
 scene.addEventListener('click',e=>{
   const el=e.target.closest('.node');if(!el)return;
+  if(hoveredNode===el&&tipOpen){
+    closeActiveNode();
+    return;
+  }
+  openNodeTip(el);
   spawnSparks(e.clientX,e.clientY,el._data.type);
+  const dot=getNodeDot(el);
+  if(!dot)return;
   gsap.timeline()
-    .to(el.querySelector('.node-dot'),{scale:2.4,duration:0.12,ease:'power2.out'})
-    .to(el.querySelector('.node-dot'),{scale:2.0,duration:0.2, ease:'power2.in'});
+    .to(dot,{scale:2.4,duration:0.12,ease:'power2.out'})
+    .to(dot,{scale:2.0,duration:0.2, ease:'power2.in'});
 });
 
 let touchHeld=null;
 scene.addEventListener('touchstart',e=>{
   const el=e.target.closest('.node');if(!el)return;
   e.preventDefault();
-  /* cerrar el anterior si hay uno abierto */
-  if(touchHeld&&touchHeld!==el){
-    touchHeld.classList.remove('active');
-    gsap.to(touchHeld.querySelector('.node-dot'),{scale:1,duration:0.15,ease:'power3.out'});
+  if(hoveredNode===el&&tipOpen){
+    closeActiveNode();
+    return;
   }
-  touchHeld=el;hoveredNode=el;el.classList.add('active');
-  showTip(el._data,el);
+  openNodeTip(el);
   /* activar overlay para poder cerrar tocando fuera */
   tipOverlay.classList.add('active');
-  gsap.to(el.querySelector('.node-dot'),{scale:2.0,duration:0.27,ease:'back.out(2)'});
   spawnSparks(parseFloat(el.style.left),parseFloat(el.style.top),el._data.type);
 },{passive:false});
 
-/* en móvil NO cerramos al levantar el dedo — sólo al tocar fuera (overlay) */
-window.addEventListener('touchend',e=>{
-  if(!touchHeld) return;
-  /* si el toque terminó sobre otro nodo, no hacemos nada extra */
-},{passive:true});
+document.addEventListener('click',e=>{
+  if(!tipOpen)return;
+  if(e.target.closest('.node')||e.target.closest('#player')||e.target.closest('#intro'))return;
+  closeActiveNode();
+});
 
 /* ═══ DRAG ══════════════════════════════════════════════════════════════ */
+function isDragBlockedTarget(target){
+  return target.closest('.node')||target.closest('#intro')||target.closest('#player');
+}
+
 let drag={active:false,sx:0,sy:0,rx:0,ry:0};
 document.addEventListener('mousedown',e=>{
-  if(e.target.closest('.node')||e.target.closest('#intro')||e.target.closest('#player'))return;
+  if(isDragBlockedTarget(e.target))return;
   drag={active:true,sx:e.clientX,sy:e.clientY,rx:sphereRot.x,ry:sphereRot.y};
   document.body.style.cursor='grabbing';
 });
@@ -888,7 +952,7 @@ document.addEventListener('mouseup',()=>{drag.active=false;document.body.style.c
 
 let tdrag={active:false,sx:0,sy:0,rx:0,ry:0};
 document.addEventListener('touchstart',e=>{
-  if(e.target.closest('.node')||e.target.closest('#intro')||e.target.closest('#player'))return;
+  if(isDragBlockedTarget(e.target))return;
   const t=e.touches[0];
   tdrag={active:true,sx:t.clientX,sy:t.clientY,rx:sphereRot.x,ry:sphereRot.y};
 },{passive:true});
@@ -907,31 +971,39 @@ const playIcon=document.getElementById('play-icon');
 const playerEl=document.getElementById('player');
 let isPlaying=false;
 
+function hasAudioSource(){
+  return !!audio.src&&audio.src!==window.location.href;
+}
+
+function setPlayerPlayingState(playing){
+  isPlaying=playing;
+  playIcon.classList.toggle('paused',playing);
+  gsap.to(playerEl,{borderColor:playing?'rgba(255,200,95,0.3)':'rgba(255,255,255,0.09)',duration:0.4});
+}
+
 function tryAutoplay(){
-  if(!audio.src||audio.src===window.location.href)return;
+  if(!hasAudioSource())return;
   audio.volume=0;
   audio.play().then(()=>{
-    isPlaying=true;playIcon.classList.add('paused');
+    setPlayerPlayingState(true);
     gsap.to(audio,{volume:1,duration:4,ease:'power1.inOut'});
-    gsap.to(playerEl,{borderColor:'rgba(255,200,95,0.3)',duration:0.5});
   }).catch(()=>{});
 }
 
 playBtn.addEventListener('click',()=>{
-  if(!audio.src||audio.src===window.location.href){
+  if(!hasAudioSource()){
     gsap.to('#song-title',{opacity:0.22,duration:0.12,yoyo:true,repeat:5});return;
   }
   if(!isPlaying){
     audio.play().then(()=>{
-      isPlaying=true;playIcon.classList.add('paused');
-      gsap.to(playerEl,{borderColor:'rgba(255,200,95,0.3)',duration:0.4});
+      setPlayerPlayingState(true);
     }).catch(()=>{});
   } else {
-    audio.pause();isPlaying=false;playIcon.classList.remove('paused');
-    gsap.to(playerEl,{borderColor:'rgba(255,255,255,0.09)',duration:0.4});
+    audio.pause();
+    setPlayerPlayingState(false);
   }
 });
-audio.addEventListener('ended',()=>{isPlaying=false;playIcon.classList.remove('paused');});
+audio.addEventListener('ended',()=>setPlayerPlayingState(false));
 
 /* ═══ SPARKS ════════════════════════════════════════════════════════════ */
 function spawnSparks(x,y,type){
